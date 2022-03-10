@@ -1,0 +1,7 @@
+linters:
+  enable-all: true
+  disable:
+    - golint # deprecated
+    - scopelint # deprecated
+    - interfacer # deprecated
+    - maligned # deprecated

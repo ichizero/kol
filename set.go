@@ -1,7 +1,7 @@
 package kol
 
 import (
-	"golang.org/x/exp/maps"
+	"golang.org/x/exp/maps" // nolint:typecheck
 )
 
 type Set[E comparable] interface {
