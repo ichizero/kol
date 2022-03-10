@@ -182,7 +182,7 @@ func TestList_Contains(t *testing.T) {
 			want: true,
 		},
 		{
-			name: "not contains",
+			name: "not contained",
 			list: NewList[int](1, 2, 3),
 			elem: 999,
 			want: false,
@@ -228,7 +228,7 @@ func TestList_Distinct(t *testing.T) {
 	tests := []struct {
 		name string
 		list List[int]
-		want List[int]
+		want Set[int]
 	}{
 		{
 			name: "no duplication",
@@ -547,22 +547,22 @@ func TestList_IndexOfLast(t *testing.T) {
 
 func TestList_Minus(t *testing.T) {
 	tests := []struct {
-		name string
-		list List[int]
-		elem int
-		want List[int]
+		name  string
+		list  List[int]
+		elems []int
+		want  List[int]
 	}{
 		{
-			name: "minus",
-			list: NewList[int](1, 2, 3, 3),
-			elem: 3,
-			want: NewList[int](1, 2, 3),
+			name:  "minus",
+			list:  NewList[int](1, 2, 3, 3, 3),
+			elems: []int{3, 3},
+			want:  NewList[int](1, 2, 3),
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			prev := tt.list.ToSlice()
-			assert.Equal(t, tt.want, tt.list.Minus(tt.elem))
+			assert.Equal(t, tt.want, tt.list.Minus(tt.elems...))
 			assert.Equal(t, prev, tt.list.ToSlice())
 		})
 	}
@@ -646,22 +646,22 @@ func TestList_Partition(t *testing.T) {
 
 func TestList_Plus(t *testing.T) {
 	tests := []struct {
-		name string
-		list List[int]
-		elem int
-		want List[int]
+		name  string
+		list  List[int]
+		elems []int
+		want  List[int]
 	}{
 		{
-			name: "plus",
-			list: NewList[int](1, 2, 3),
-			elem: 3,
-			want: NewList[int](1, 2, 3, 3),
+			name:  "plus",
+			list:  NewList[int](1, 2, 3),
+			elems: []int{3, 4},
+			want:  NewList[int](1, 2, 3, 3, 4),
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			prev := tt.list.ToSlice()
-			assert.Equal(t, tt.want, tt.list.Plus(tt.elem))
+			assert.Equal(t, tt.want, tt.list.Plus(tt.elems...))
 			assert.Equal(t, prev, tt.list.ToSlice())
 		})
 	}

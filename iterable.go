@@ -5,33 +5,19 @@ type Iterable[E comparable] interface {
 	Any(predicate func(element E) bool) bool
 	Contains(element E) bool
 	Count(predicate func(element E) bool) int
-	Distinct() List[E]
-	Drop(n uint) List[E]
-	DropWhile(predicate func(element E) bool) List[E]
-	ElementAt(index int) (*E, error)
-	ElementAtOrElse(index int, defaultValue func() E) E
-	Filter(predicate func(element E) bool) List[E]
-	FilterIndexed(predicate func(idx int, element E) bool) List[E]
+	Distinct() Collection[E]
+	Filter(predicate func(element E) bool) Collection[E]
 	Find(predicate func(element E) bool) *E
-	FindLast(predicate func(element E) bool) *E
 	ForEach(action func(element E))
-	ForEachIndexed(action func(index int, element E))
-	IndexOf(element E) int
-	IndexOfFirst(predicate func(element E) bool) int
-	IndexOfLast(predicate func(element E) bool) int
-	Intersect() Set[E]     // TODO
+	Intersect(other Iterable[E]) Set[E]
 	Iterator() Iterator[E] // TODO
-	Minus(element E) List[E]
+	Minus(element ...E) Collection[E]
 	None(predicate func(element E) bool) bool
-	Partition(predicate func(element E) bool) (List[E], List[E])
-	Plus(element E) List[E]
-	Reversed() List[E]
-	Shuffled() List[E]
+	Plus(element ...E) Collection[E]
 	Single(predicate func(element E) bool) *E
-	Subtract() Set[E] // TODO
-	Take(n uint) List[E]
-	TakeWhile(predicate func(element E) bool) List[E]
+	Subtract(other Iterable[E]) Set[E]
 	ToList() List[E]
+	ToSet() Set[E]
 	ToSlice() []E
-	Union() Set[E] // TODO
+	Union(other Iterable[E]) Set[E]
 }

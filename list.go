@@ -7,6 +7,22 @@ import (
 
 type List[E comparable] interface {
 	Collection[E]
+
+	Drop(n uint) Collection[E]
+	DropWhile(predicate func(element E) bool) Collection[E]
+	ElementAt(index int) (*E, error)
+	ElementAtOrElse(index int, defaultValue func() E) E
+	FilterIndexed(predicate func(idx int, element E) bool) Collection[E]
+	FindLast(predicate func(element E) bool) *E
+	ForEachIndexed(action func(index int, element E))
+	IndexOf(element E) int
+	IndexOfFirst(predicate func(element E) bool) int
+	IndexOfLast(predicate func(element E) bool) int
+	Partition(predicate func(element E) bool) (List[E], List[E])
+	Reversed() List[E]
+	Shuffled() List[E]
+	Take(n uint) Collection[E]
+	TakeWhile(predicate func(element E) bool) Collection[E]
 }
 
 type list[E comparable] struct {
@@ -22,7 +38,13 @@ func NewList[E comparable](elements ...E) List[E] {
 	}
 }
 
-var _ Collection[int] = (*list[int])(nil)
+func (l *list[E]) clone() List[E] {
+	return &list[E]{
+		elements: slices.Clone(l.elements),
+	}
+}
+
+var _ List[int] = (*list[int])(nil)
 
 func (l *list[E]) Add(elements ...E) {
 	l.elements = append(l.elements, elements...)
@@ -60,29 +82,29 @@ func (l *list[E]) Size() int {
 
 var _ Iterable[int] = (*list[int])(nil)
 
-func (l *list[E]) All(predicate func(element E) bool) bool {
+func (l *list[E]) All(p func(e E) bool) bool {
 	if l.Size() == 0 {
 		return false
 	}
-	for _, s := range l.elements {
-		if !predicate(s) {
+	for _, e := range l.elements {
+		if !p(e) {
 			return false
 		}
 	}
 	return true
 }
 
-func (l *list[E]) Any(predicate func(element E) bool) bool {
-	for _, s := range l.elements {
-		if predicate(s) {
+func (l *list[E]) Any(p func(e E) bool) bool {
+	for _, e := range l.elements {
+		if p(e) {
 			return true
 		}
 	}
 	return false
 }
 
-func (l *list[E]) Contains(element E) bool {
-	return slices.Contains(l.elements, element)
+func (l *list[E]) Contains(e E) bool {
+	return slices.Contains(l.elements, e)
 }
 
 func (l *list[E]) Count(p func(e E) bool) int {
@@ -95,7 +117,7 @@ func (l *list[E]) Count(p func(e E) bool) int {
 	return count
 }
 
-func (l *list[E]) Distinct() List[E] {
+func (l *list[E]) Distinct() Collection[E] {
 	size := l.Size()
 	if size == 0 {
 		return NewList[E]()
@@ -112,14 +134,14 @@ func (l *list[E]) Distinct() List[E] {
 	return NewList(filtered...)
 }
 
-func (l *list[E]) Drop(n uint) List[E] {
+func (l *list[E]) Drop(n uint) Collection[E] {
 	if int(n) >= l.Size() {
 		return NewList[E]()
 	}
 	return NewList[E](l.elements[n:]...)
 }
 
-func (l *list[E]) DropWhile(p func(e E) bool) List[E] {
+func (l *list[E]) DropWhile(p func(e E) bool) Collection[E] {
 	for i, e := range l.elements {
 		if !p(e) {
 			return NewList(l.elements[i:]...)
@@ -143,19 +165,19 @@ func (l *list[E]) ElementAtOrElse(idx int, f func() E) E {
 	return *e
 }
 
-func (l *list[E]) Filter(p func(e E) bool) List[E] {
+func (l *list[E]) Filter(p func(e E) bool) Collection[E] {
 	return l.FilterIndexed(func(_ int, e E) bool {
 		return p(e)
 	})
 }
 
-func (l *list[E]) FilterIndexed(p func(idx int, e E) bool) List[E] {
+func (l *list[E]) FilterIndexed(p func(idx int, e E) bool) Collection[E] {
 	var filtered = make([]E, 0)
-	for i, e := range l.elements {
-		if p(i, e) {
+	l.ForEachIndexed(func(idx int, e E) {
+		if p(idx, e) {
 			filtered = append(filtered, e)
 		}
-	}
+	})
 	return NewList(filtered...)
 }
 
@@ -209,17 +231,17 @@ func (l *list[E]) IndexOfLast(p func(e E) bool) int {
 	return -1
 }
 
-func (l *list[E]) Intersect() Set[E] {
-	panic("not implemented")
+func (l *list[E]) Intersect(other Iterable[E]) Set[E] {
+	return l.ToSet().Intersect(other)
 }
 
 func (l *list[E]) Iterator() Iterator[E] {
 	panic("not implemented")
 }
 
-func (l *list[E]) Minus(e E) List[E] {
+func (l *list[E]) Minus(e ...E) Collection[E] {
 	cloned := NewList(slices.Clone(l.elements)...)
-	cloned.Remove(e)
+	cloned.Remove(e...)
 	return cloned
 }
 
@@ -245,8 +267,8 @@ func (l *list[E]) Partition(p func(e E) bool) (List[E], List[E]) {
 	return NewList(first...), NewList(second...)
 }
 
-func (l *list[E]) Plus(e E) List[E] {
-	return NewList(append(slices.Clone(l.elements), e)...)
+func (l *list[E]) Plus(e ...E) Collection[E] {
+	return NewList(append(slices.Clone(l.elements), e...)...)
 }
 
 func (l *list[E]) Reversed() List[E] {
@@ -284,11 +306,11 @@ func (l *list[E]) Single(p func(e E) bool) *E {
 	return res
 }
 
-func (l *list[E]) Subtract() Set[E] {
-	panic("not implemented")
+func (l *list[E]) Subtract(other Iterable[E]) Set[E] {
+	return l.ToSet().Intersect(other)
 }
 
-func (l *list[E]) Take(n uint) List[E] {
+func (l *list[E]) Take(n uint) Collection[E] {
 	max := uint(l.Size())
 	if max < n {
 		n = max
@@ -296,7 +318,7 @@ func (l *list[E]) Take(n uint) List[E] {
 	return NewList(l.elements[:n]...)
 }
 
-func (l *list[E]) TakeWhile(p func(e E) bool) List[E] {
+func (l *list[E]) TakeWhile(p func(e E) bool) Collection[E] {
 	for i, e := range l.elements {
 		if !p(e) {
 			return NewList(l.elements[:i]...)
@@ -306,13 +328,18 @@ func (l *list[E]) TakeWhile(p func(e E) bool) List[E] {
 }
 
 func (l *list[E]) ToList() List[E] {
-	return l
+	return l.clone()
+}
+
+func (l *list[E]) ToSet() Set[E] {
+	return NewSet(l.elements...)
 }
 
 func (l *list[E]) ToSlice() []E {
-	return l.elements
+	return slices.Clone(l.elements)
 }
 
-func (l *list[E]) Union() Set[E] {
-	panic("not implemented")
+func (l *list[E]) Union(other Iterable[E]) Set[E] {
+	return l.ToSet().Plus(other.ToSlice()...)
+
 }
