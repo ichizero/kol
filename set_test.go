@@ -406,11 +406,15 @@ func TestSet_Plus(t *testing.T) {
 }
 
 func TestSet_Single(t *testing.T) {
+	type result struct {
+		e  int
+		ok bool
+	}
 	tests := []struct {
 		name      string
 		set       Set[int]
 		predicate func(e int) bool
-		want      *int
+		want      result
 	}{
 		{
 			name: "matched once",
@@ -418,7 +422,7 @@ func TestSet_Single(t *testing.T) {
 			predicate: func(e int) bool {
 				return e == 1
 			},
-			want: toPtrInt(1),
+			want: result{e: 1, ok: true},
 		},
 		{
 			name: "matched twice",
@@ -426,11 +430,14 @@ func TestSet_Single(t *testing.T) {
 			predicate: func(e int) bool {
 				return e > 1
 			},
+			want: result{e: 0, ok: false},
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			assert.Equal(t, tt.want, tt.set.Single(tt.predicate))
+			got, ok := tt.set.Single(tt.predicate)
+			assert.Equal(t, tt.want.e, got)
+			assert.Equal(t, tt.want.ok, ok)
 		})
 	}
 }

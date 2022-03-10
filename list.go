@@ -10,10 +10,10 @@ type List[E comparable] interface {
 
 	Drop(n uint) Collection[E]
 	DropWhile(predicate func(element E) bool) Collection[E]
-	ElementAt(index int) (*E, error)
+	ElementAt(index int) (E, bool)
 	ElementAtOrElse(index int, defaultValue func() E) E
 	FilterIndexed(predicate func(idx int, element E) bool) Collection[E]
-	FindLast(predicate func(element E) bool) *E
+	FindLast(predicate func(element E) bool) (E, bool)
 	ForEachIndexed(action func(index int, element E))
 	IndexOf(element E) int
 	IndexOfFirst(predicate func(element E) bool) int
@@ -150,19 +150,20 @@ func (l *list[E]) DropWhile(p func(e E) bool) Collection[E] {
 	return NewList[E]()
 }
 
-func (l *list[E]) ElementAt(idx int) (*E, error) {
+func (l *list[E]) ElementAt(idx int) (E, bool) {
 	if idx < 0 || idx >= l.Size() {
-		return nil, ErrIndexOutOfRange
+		var zero E
+		return zero, false
 	}
-	return &l.elements[idx], nil
+	return l.elements[idx], true
 }
 
 func (l *list[E]) ElementAtOrElse(idx int, f func() E) E {
-	e, err := l.ElementAt(idx)
-	if err != nil {
+	e, ok := l.ElementAt(idx)
+	if !ok {
 		return f()
 	}
-	return *e
+	return e
 }
 
 func (l *list[E]) Filter(p func(e E) bool) Collection[E] {
@@ -181,19 +182,21 @@ func (l *list[E]) FilterIndexed(p func(idx int, e E) bool) Collection[E] {
 	return NewList(filtered...)
 }
 
-func (l *list[E]) Find(p func(e E) bool) *E {
+func (l *list[E]) Find(p func(e E) bool) (E, bool) {
 	if idx := l.IndexOfFirst(p); idx == -1 {
-		return nil
+		var zero E
+		return zero, false
 	} else {
-		return &l.elements[idx]
+		return l.elements[idx], true
 	}
 }
 
-func (l *list[E]) FindLast(p func(e E) bool) *E {
+func (l *list[E]) FindLast(p func(e E) bool) (E, bool) {
 	if idx := l.IndexOfLast(p); idx == -1 {
-		return nil
+		var zero E
+		return zero, false
 	} else {
-		return &l.elements[idx]
+		return l.elements[idx], true
 	}
 }
 
@@ -290,20 +293,20 @@ func (l *list[E]) Shuffled() List[E] {
 	return NewList(cloned...)
 }
 
-func (l *list[E]) Single(p func(e E) bool) *E {
+func (l *list[E]) Single(p func(e E) bool) (E, bool) {
 	var found = false
-	var res *E
+	var res E
 	for _, e := range l.elements {
-		e := e
 		if p(e) {
 			if found {
-				return nil
+				var zero E
+				return zero, false
 			}
-			res = &e
+			res = e
 			found = true
 		}
 	}
-	return res
+	return res, true
 }
 
 func (l *list[E]) Subtract(other Iterable[E]) Set[E] {

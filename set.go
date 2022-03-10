@@ -105,13 +105,14 @@ func (s *set[E]) Distinct() Collection[E] {
 	return s
 }
 
-func (s *set[E]) Find(p func(e E) bool) *E {
+func (s *set[E]) Find(p func(e E) bool) (E, bool) {
 	for e := range s.m {
 		if p(e) {
-			return &e
+			return e, true
 		}
 	}
-	return nil
+	var zero E
+	return zero, false
 }
 
 func (s *set[E]) Filter(p func(e E) bool) Collection[E] {
@@ -165,20 +166,20 @@ func (s *set[E]) Plus(e ...E) Collection[E] {
 	return cloned
 }
 
-func (s *set[E]) Single(p func(e E) bool) *E {
+func (s *set[E]) Single(p func(e E) bool) (E, bool) {
 	var found = false
-	var res *E
+	var res E
 	for e := range s.m {
-		e := e
 		if p(e) {
 			if found {
-				return nil
+				var zero E
+				return zero, false
 			}
-			res = &e
+			res = e
 			found = true
 		}
 	}
-	return res
+	return res, true
 }
 
 func (s *set[E]) Subtract(other Iterable[E]) Set[E] {

@@ -7,14 +7,14 @@ type Iterable[E comparable] interface {
 	Count(predicate func(element E) bool) int
 	Distinct() Collection[E]
 	Filter(predicate func(element E) bool) Collection[E]
-	Find(predicate func(element E) bool) *E
+	Find(predicate func(element E) bool) (E, bool)
 	ForEach(action func(element E))
 	Intersect(other Iterable[E]) Set[E]
 	Iterator() Iterator[E] // TODO
 	Minus(element ...E) Collection[E]
 	None(predicate func(element E) bool) bool
 	Plus(element ...E) Collection[E]
-	Single(predicate func(element E) bool) *E
+	Single(predicate func(element E) bool) (E, bool)
 	Subtract(other Iterable[E]) Set[E]
 	ToList() List[E]
 	ToSet() Set[E]

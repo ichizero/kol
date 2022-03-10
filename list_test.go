@@ -6,10 +6,6 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func toPtrInt(v int) *int {
-	return &v
-}
-
 func TestList_Remove(t *testing.T) {
 	tests := []struct {
 		name    string
@@ -346,37 +342,40 @@ func TestList_DropWhile(t *testing.T) {
 }
 
 func TestList_ElementAt(t *testing.T) {
+	type result struct {
+		e  int
+		ok bool
+	}
 	tests := []struct {
-		name    string
-		list    List[int]
-		index   int
-		want    *int
-		wantErr error
+		name  string
+		list  List[int]
+		index int
+		want  result
 	}{
 		{
 			name:  "exists",
 			list:  NewList[int](1, 2, 3),
 			index: 1,
-			want:  toPtrInt(2),
+			want:  result{e: 2, ok: true},
 		},
 		{
-			name:    "index out of range",
-			list:    NewList[int](1, 2, 3),
-			index:   -1,
-			wantErr: ErrIndexOutOfRange,
+			name:  "index out of range",
+			list:  NewList[int](1, 2, 3),
+			index: -1,
+			want:  result{e: 0, ok: false},
 		},
 		{
-			name:    "empty list",
-			list:    NewList[int](),
-			index:   0,
-			wantErr: ErrIndexOutOfRange,
+			name:  "empty list",
+			list:  NewList[int](),
+			index: 0,
+			want:  result{e: 0, ok: false},
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := tt.list.ElementAt(tt.index)
-			assert.ErrorIs(t, err, tt.wantErr)
-			assert.Equal(t, tt.want, got)
+			got, ok := tt.list.ElementAt(tt.index)
+			assert.Equal(t, tt.want.e, got)
+			assert.Equal(t, tt.want.ok, ok)
 		})
 	}
 }
@@ -689,11 +688,15 @@ func TestList_Reversed(t *testing.T) {
 }
 
 func TestList_Single(t *testing.T) {
+	type result struct {
+		e  int
+		ok bool
+	}
 	tests := []struct {
 		name      string
 		list      List[int]
 		predicate func(e int) bool
-		want      *int
+		want      result
 	}{
 		{
 			name: "matched",
@@ -701,7 +704,7 @@ func TestList_Single(t *testing.T) {
 			predicate: func(e int) bool {
 				return e == 1
 			},
-			want: toPtrInt(1),
+			want: result{e: 1, ok: true},
 		},
 		{
 			name: "duplicated",
@@ -709,11 +712,14 @@ func TestList_Single(t *testing.T) {
 			predicate: func(e int) bool {
 				return e == 3
 			},
+			want: result{e: 0, ok: false},
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			assert.Equal(t, tt.want, tt.list.Single(tt.predicate))
+			got, ok := tt.list.Single(tt.predicate)
+			assert.Equal(t, tt.want.e, got)
+			assert.Equal(t, tt.want.ok, ok)
 		})
 	}
 }
