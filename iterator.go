@@ -1,5 +1,7 @@
 package kol
 
+import "fmt"
+
 type Iterator[E comparable] interface {
 	HasNext() bool
 	Next() (E, bool)
@@ -30,4 +32,8 @@ func (i *iterator[E]) Next() (E, bool) {
 	}
 	var zero E
 	return zero, false
+}
+
+func (i *iterator[E]) String() string {
+	return fmt.Sprintf("cursor: %d, elements: %v", i.cursor, i.elements)
 }

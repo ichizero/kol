@@ -1,6 +1,7 @@
 package kol
 
 import (
+	"fmt"
 	"strconv"
 	"testing"
 
@@ -47,6 +48,16 @@ func TestSequence_MethodChain(t *testing.T) {
 		{ID: 5, Name: "Ellen"}, // should not make an admin
 		{ID: 6, Name: "Frank"}, // should not make an admin
 	}, users)
+}
+
+func TestSequence_String(t *testing.T) {
+	seq := NewSequence([]int{1, 2, 3}...).
+		Filter(func(e int) bool { return e < 2 }).
+		Map(func(e int) int { return e * 2 }).
+		Distinct().
+		Take(2).
+		Drop(1)
+	assert.Equal(t, "cursor: 0, elements: [1 2 3] > filter > map > distinct > take 2 > drop 1", fmt.Sprint(seq))
 }
 
 func TestSequence_Distinct(t *testing.T) {

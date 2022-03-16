@@ -1,5 +1,7 @@
 package kol
 
+import "fmt"
+
 type Sequence[E comparable] interface {
 	Distinct() Sequence[E]
 	Filter(predicate func(element E) bool) Sequence[E]
@@ -60,7 +62,14 @@ func (s *sequence[E]) ToList() List[E] {
 	return NewList[E](s.ToSlice()...)
 }
 
+var _ fmt.Stringer = (*sequence[int])(nil)
+
+func (s *sequence[E]) String() string {
+	return s.seq.String()
+}
+
 type seq[E comparable] interface {
+	fmt.Stringer
 	Next() (E, bool)
 }
 
@@ -91,6 +100,10 @@ func (s *distinctSequence[E]) Next() (E, bool) {
 	return zero, false
 }
 
+func (s *distinctSequence[E]) String() string {
+	return fmt.Sprintf("%s > distinct", s.parent)
+}
+
 type filterSequence[E comparable] struct {
 	parent    seq[E]
 	predicate func(element E) bool
@@ -116,6 +129,10 @@ func (s *filterSequence[E]) Next() (E, bool) {
 	return zero, false
 }
 
+func (s *filterSequence[E]) String() string {
+	return fmt.Sprintf("%s > filter", s.parent)
+}
+
 type mapSequence[E comparable] struct {
 	parent    seq[E]
 	predicate func(element E) E
@@ -137,6 +154,10 @@ func (s *mapSequence[E]) Next() (E, bool) {
 	}
 	var zero E
 	return zero, false
+}
+
+func (s *mapSequence[E]) String() string {
+	return fmt.Sprintf("%s > map", s.parent)
 }
 
 type takeSequence[E comparable] struct {
@@ -167,6 +188,10 @@ func (s *takeSequence[E]) Next() (E, bool) {
 	return zero, false
 }
 
+func (s *takeSequence[E]) String() string {
+	return fmt.Sprintf("%s > take %d", s.parent, s.limit)
+}
+
 type dropSequence[E comparable] struct {
 	parent  seq[E]
 	limit   int
@@ -195,6 +220,10 @@ func (s *dropSequence[E]) Next() (E, bool) {
 	return zero, false
 }
 
+func (s *dropSequence[E]) String() string {
+	return fmt.Sprintf("%s > drop %d", s.parent, s.limit)
+}
+
 func MapSequence[E1 comparable, E2 comparable](seq Sequence[E1], predicate func(E1) E2) Sequence[E2] {
 	return newSequence[E2](newMapSequenceWithTypeConversion[E1, E2](seq.(*sequence[E1]).seq, predicate))
 }
@@ -220,4 +249,8 @@ func (s *mapSequenceWithTypeConversion[E1, E2]) Next() (E2, bool) {
 	}
 	var zero E2
 	return zero, false
+}
+
+func (s *mapSequenceWithTypeConversion[E1, E2]) String() string {
+	return fmt.Sprintf("%s > map", s.parent)
 }
