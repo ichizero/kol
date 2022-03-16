@@ -2,13 +2,21 @@ package kol
 
 import "fmt"
 
+// Sequence returns lazily evaluated values.
 type Sequence[E comparable] interface {
+	// Distinct returns a sequence containing only distinct elements.
 	Distinct() Sequence[E]
+	// Filter returns a sequence containing only elements matching the given predicate.
 	Filter(predicate func(element E) bool) Sequence[E]
+	// Map returns a sequence containing the results of applying the given transform function to each element.
 	Map(predicate func(element E) E) Sequence[E]
+	// Take returns a sequence containing first n elements.
 	Take(n int) Sequence[E]
+	// Drop returns a sequence containing all elements except first n elements.
 	Drop(n int) Sequence[E]
+	// ToList evaluate each element and returns it as a List.
 	ToList() List[E]
+	// ToSlice evaluate each element and returns it as a slice.
 	ToSlice() []E
 }
 
@@ -135,13 +143,13 @@ func (s *filterSequence[E]) String() string {
 
 type mapSequence[E comparable] struct {
 	parent    seq[E]
-	predicate func(element E) E
+	transform func(element E) E
 }
 
 var _ seq[int] = (*mapSequence[int])(nil)
 
-func newMapSequence[E comparable](parent seq[E], predicate func(e E) E) seq[E] {
-	return &mapSequence[E]{parent: parent, predicate: predicate}
+func newMapSequence[E comparable](parent seq[E], transform func(e E) E) seq[E] {
+	return &mapSequence[E]{parent: parent, transform: transform}
 }
 
 func (s *mapSequence[E]) Next() (E, bool) {
@@ -150,7 +158,7 @@ func (s *mapSequence[E]) Next() (E, bool) {
 		if !ok {
 			break
 		}
-		return s.predicate(e), true
+		return s.transform(e), true
 	}
 	var zero E
 	return zero, false
@@ -230,13 +238,13 @@ func MapSequence[E1 comparable, E2 comparable](seq Sequence[E1], predicate func(
 
 type mapSequenceWithTypeConversion[E1 comparable, E2 comparable] struct {
 	parent    seq[E1]
-	predicate func(element E1) E2
+	transform func(element E1) E2
 }
 
 var _ seq[int] = (*mapSequenceWithTypeConversion[string, int])(nil)
 
-func newMapSequenceWithTypeConversion[E1 comparable, E2 comparable](parent seq[E1], predicate func(e E1) E2) seq[E2] {
-	return &mapSequenceWithTypeConversion[E1, E2]{parent: parent, predicate: predicate}
+func newMapSequenceWithTypeConversion[E1 comparable, E2 comparable](parent seq[E1], transform func(e E1) E2) seq[E2] {
+	return &mapSequenceWithTypeConversion[E1, E2]{parent: parent, transform: transform}
 }
 
 func (s *mapSequenceWithTypeConversion[E1, E2]) Next() (E2, bool) {
@@ -245,7 +253,7 @@ func (s *mapSequenceWithTypeConversion[E1, E2]) Next() (E2, bool) {
 		if !ok {
 			break
 		}
-		return s.predicate(e), true
+		return s.transform(e), true
 	}
 	var zero E2
 	return zero, false

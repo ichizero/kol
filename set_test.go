@@ -299,13 +299,13 @@ func TestSet_Map(t *testing.T) {
 	tests := []struct {
 		name      string
 		set       Set[int]
-		predicate func(e int) int
+		transform func(e int) int
 		want      Set[int]
 	}{
 		{
 			name: "map",
 			set:  NewSet[int](1, 2, 3),
-			predicate: func(e int) int {
+			transform: func(e int) int {
 				return e * 2
 			},
 			want: NewSet[int](2, 4, 6),
@@ -313,7 +313,7 @@ func TestSet_Map(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			assert.Equal(t, tt.want, tt.set.Map(tt.predicate))
+			assert.Equal(t, tt.want, tt.set.Map(tt.transform))
 		})
 	}
 }
@@ -470,13 +470,13 @@ func TestMapSet(t *testing.T) {
 	tests := []struct {
 		name      string
 		elems     []int
-		predicate func(e int) string
+		transform func(e int) string
 		want      []string
 	}{
 		{
 			name:  "map",
 			elems: []int{1, 2, 3},
-			predicate: func(e int) string {
+			transform: func(e int) string {
 				return strconv.Itoa(e)
 			},
 			want: []string{"1", "2", "3"},
@@ -484,7 +484,7 @@ func TestMapSet(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			assert.ElementsMatch(t, tt.want, MapSet[int, string](NewSet(tt.elems...), tt.predicate).ToSlice())
+			assert.ElementsMatch(t, tt.want, MapSet[int, string](NewSet(tt.elems...), tt.transform).ToSlice())
 		})
 	}
 }

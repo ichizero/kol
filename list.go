@@ -5,24 +5,44 @@ import (
 	"golang.org/x/exp/slices"
 )
 
+// List is an ordered collection of elements.
 type List[E comparable] interface {
 	Collection[E]
 
+	// Drop returns a list containing all elements except first n elements.
 	Drop(n uint) Collection[E]
+	// DropWhile returns a list containing all elements except first elements that satisfy the given predicate.
 	DropWhile(predicate func(element E) bool) Collection[E]
+	// ElementAt returns an element at the given index.
+	// If the given index is out of range of this collection, it returns `false` as a second return value.
 	ElementAt(index int) (E, bool)
+	// ElementAtOrElse returns an element at the given index or the result calling of the defaultValue function if the index is out of range of this collection.
 	ElementAtOrElse(index int, defaultValue func() E) E
+	// FilterIndexed returns a list containing only elements matching the given predicate.
 	FilterIndexed(predicate func(idx int, element E) bool) Collection[E]
+	// FindLast returns the last element matching the given predicate.
+	// If there is no such element, it returns `false` as a second return value.
 	FindLast(predicate func(element E) bool) (E, bool)
+	// ForEachIndexed performs the given action on each element.
 	ForEachIndexed(action func(index int, element E))
+	// IndexOf returns an index of the first element matching the given element, or -1 if not preset.
 	IndexOf(element E) int
+	// IndexOfFirst returns an index of the first element matching the given predicate, or -1 if not present.
 	IndexOfFirst(predicate func(element E) bool) int
+	// IndexOfLast returns an index of the last element matching the given predicate, or -1 if not present.
 	IndexOfLast(predicate func(element E) bool) int
-	MapIndexed(predicate func(idx int, element E) E) Collection[E]
+	// MapIndexed returns a list containing the results of applying the given transform function to each element and its index.
+	MapIndexed(transform func(idx int, element E) E) Collection[E]
+	// Partition splits the original collection in to two lists.
+	// If any element returns `true` from the given predicate, it is included in the first list, otherwise it is included in the second list.
 	Partition(predicate func(element E) bool) (List[E], List[E])
+	// Reversed returns a list with elements in reversed order.
 	Reversed() List[E]
+	// Shuffled returns a list with elements in shuffled order.
 	Shuffled() List[E]
+	// Take returns a list containing first n elements.
 	Take(n uint) Collection[E]
+	// TakeWhile returns a list containing first elements satisfying the given predicate.
 	TakeWhile(predicate func(element E) bool) Collection[E]
 }
 
@@ -239,13 +259,9 @@ func (l *list[E]) Intersect(other Iterable[E]) Set[E] {
 	return l.ToSet().Intersect(other)
 }
 
-func (l *list[E]) Iterator() Iterator[E] {
-	panic("not implemented")
-}
-
-func (l *list[E]) Map(p func(e E) E) Collection[E] {
+func (l *list[E]) Map(t func(e E) E) Collection[E] {
 	return l.MapIndexed(func(_ int, e E) E {
-		return p(e)
+		return t(e)
 	})
 }
 
@@ -362,11 +378,11 @@ func (l *list[E]) Union(other Iterable[E]) Set[E] {
 
 }
 
-func MapList[E1 comparable, E2 comparable](collection Collection[E1], predicate func(E1) E2) List[E2] {
+func MapList[E1 comparable, E2 comparable](collection Collection[E1], transform func(E1) E2) List[E2] {
 	result := make([]E2, 0, collection.Size())
 
 	collection.ForEach(func(e1 E1) {
-		result = append(result, predicate(e1))
+		result = append(result, transform(e1))
 	})
 
 	return NewList(result...)

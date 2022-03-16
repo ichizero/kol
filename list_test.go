@@ -549,13 +549,13 @@ func TestList_MapIndexed(t *testing.T) {
 	tests := []struct {
 		name      string
 		list      List[int]
-		predicate func(idx int, e int) int
+		transform func(idx int, e int) int
 		want      List[int]
 	}{
 		{
 			name: "use index",
 			list: NewList[int](1, 2, 3),
-			predicate: func(idx int, e int) int {
+			transform: func(idx int, e int) int {
 				return e + idx
 			},
 			want: NewList[int](1, 3, 5),
@@ -563,7 +563,7 @@ func TestList_MapIndexed(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			assert.Equal(t, tt.want, tt.list.MapIndexed(tt.predicate))
+			assert.Equal(t, tt.want, tt.list.MapIndexed(tt.transform))
 		})
 	}
 }
@@ -830,13 +830,13 @@ func TestMapList(t *testing.T) {
 	tests := []struct {
 		name      string
 		elems     []int
-		predicate func(e int) string
+		transform func(e int) string
 		want      []string
 	}{
 		{
 			name:  "map",
 			elems: []int{1, 2, 3, 3},
-			predicate: func(e int) string {
+			transform: func(e int) string {
 				return strconv.Itoa(e)
 			},
 			want: []string{"1", "2", "3", "3"},
@@ -844,7 +844,7 @@ func TestMapList(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			assert.Equal(t, tt.want, MapList[int, string](NewList(tt.elems...), tt.predicate).ToSlice())
+			assert.Equal(t, tt.want, MapList[int, string](NewList(tt.elems...), tt.transform).ToSlice())
 		})
 	}
 }
