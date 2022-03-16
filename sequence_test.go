@@ -1,6 +1,7 @@
 package kol
 
 import (
+	"strconv"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -169,6 +170,29 @@ func TestSequence_Drop(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			assert.Equal(t, tt.want, NewSequence(tt.elems...).Drop(tt.n).ToSlice())
+		})
+	}
+}
+
+func TestMapSequence(t *testing.T) {
+	tests := []struct {
+		name      string
+		elems     []int
+		predicate func(e int) string
+		want      []string
+	}{
+		{
+			name:  "map",
+			elems: []int{1, 2, 3, 3},
+			predicate: func(e int) string {
+				return strconv.Itoa(e)
+			},
+			want: []string{"1", "2", "3", "3"},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equal(t, tt.want, MapSequence(NewSequence(tt.elems...), tt.predicate).ToSlice())
 		})
 	}
 }

@@ -11,6 +11,7 @@ type Iterable[E comparable] interface {
 	ForEach(action func(element E))
 	Intersect(other Iterable[E]) Set[E]
 	Iterator() Iterator[E] // TODO
+	Map(predicate func(element E) E) Collection[E]
 	Minus(element ...E) Collection[E]
 	None(predicate func(element E) bool) bool
 	Plus(element ...E) Collection[E]

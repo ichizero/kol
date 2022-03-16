@@ -194,3 +194,30 @@ func (s *dropSequence[E]) Next() (E, bool) {
 	var zero E
 	return zero, false
 }
+
+func MapSequence[E1 comparable, E2 comparable](seq Sequence[E1], predicate func(E1) E2) Sequence[E2] {
+	return newSequence[E2](newMapSequenceWithTypeConversion[E1, E2](seq.(*sequence[E1]).seq, predicate))
+}
+
+type mapSequenceWithTypeConversion[E1 comparable, E2 comparable] struct {
+	parent    seq[E1]
+	predicate func(element E1) E2
+}
+
+var _ seq[int] = (*mapSequenceWithTypeConversion[string, int])(nil)
+
+func newMapSequenceWithTypeConversion[E1 comparable, E2 comparable](parent seq[E1], predicate func(e E1) E2) seq[E2] {
+	return &mapSequenceWithTypeConversion[E1, E2]{parent: parent, predicate: predicate}
+}
+
+func (s *mapSequenceWithTypeConversion[E1, E2]) Next() (E2, bool) {
+	for {
+		e, ok := s.parent.Next()
+		if !ok {
+			break
+		}
+		return s.predicate(e), true
+	}
+	var zero E2
+	return zero, false
+}

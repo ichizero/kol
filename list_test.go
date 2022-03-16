@@ -1,6 +1,7 @@
 package kol
 
 import (
+	"strconv"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -544,6 +545,29 @@ func TestList_IndexOfLast(t *testing.T) {
 	}
 }
 
+func TestList_MapIndexed(t *testing.T) {
+	tests := []struct {
+		name      string
+		list      List[int]
+		predicate func(idx int, e int) int
+		want      List[int]
+	}{
+		{
+			name: "use index",
+			list: NewList[int](1, 2, 3),
+			predicate: func(idx int, e int) int {
+				return e + idx
+			},
+			want: NewList[int](1, 3, 5),
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equal(t, tt.want, tt.list.MapIndexed(tt.predicate))
+		})
+	}
+}
+
 func TestList_Minus(t *testing.T) {
 	tests := []struct {
 		name  string
@@ -798,6 +822,29 @@ func TestList_TakeWhile(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			assert.Equal(t, tt.want, tt.list.TakeWhile(tt.predicate))
+		})
+	}
+}
+
+func TestMapList(t *testing.T) {
+	tests := []struct {
+		name      string
+		elems     []int
+		predicate func(e int) string
+		want      []string
+	}{
+		{
+			name:  "map",
+			elems: []int{1, 2, 3, 3},
+			predicate: func(e int) string {
+				return strconv.Itoa(e)
+			},
+			want: []string{"1", "2", "3", "3"},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equal(t, tt.want, MapList[int, string](NewList(tt.elems...), tt.predicate).ToSlice())
 		})
 	}
 }

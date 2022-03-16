@@ -1,6 +1,7 @@
 package kol
 
 import (
+	"strconv"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -294,6 +295,29 @@ func TestSet_Filter(t *testing.T) {
 	}
 }
 
+func TestSet_Map(t *testing.T) {
+	tests := []struct {
+		name      string
+		set       Set[int]
+		predicate func(e int) int
+		want      Set[int]
+	}{
+		{
+			name: "map",
+			set:  NewSet[int](1, 2, 3),
+			predicate: func(e int) int {
+				return e * 2
+			},
+			want: NewSet[int](2, 4, 6),
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equal(t, tt.want, tt.set.Map(tt.predicate))
+		})
+	}
+}
+
 func TestSet_ForEach(t *testing.T) {
 	tests := []struct {
 		name    string
@@ -438,6 +462,29 @@ func TestSet_Single(t *testing.T) {
 			got, ok := tt.set.Single(tt.predicate)
 			assert.Equal(t, tt.want.e, got)
 			assert.Equal(t, tt.want.ok, ok)
+		})
+	}
+}
+
+func TestMapSet(t *testing.T) {
+	tests := []struct {
+		name      string
+		elems     []int
+		predicate func(e int) string
+		want      []string
+	}{
+		{
+			name:  "map",
+			elems: []int{1, 2, 3},
+			predicate: func(e int) string {
+				return strconv.Itoa(e)
+			},
+			want: []string{"1", "2", "3"},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.ElementsMatch(t, tt.want, MapSet[int, string](NewSet(tt.elems...), tt.predicate).ToSlice())
 		})
 	}
 }

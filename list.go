@@ -18,6 +18,7 @@ type List[E comparable] interface {
 	IndexOf(element E) int
 	IndexOfFirst(predicate func(element E) bool) int
 	IndexOfLast(predicate func(element E) bool) int
+	MapIndexed(predicate func(idx int, element E) E) Collection[E]
 	Partition(predicate func(element E) bool) (List[E], List[E])
 	Reversed() List[E]
 	Shuffled() List[E]
@@ -242,6 +243,20 @@ func (l *list[E]) Iterator() Iterator[E] {
 	panic("not implemented")
 }
 
+func (l *list[E]) Map(p func(e E) E) Collection[E] {
+	return l.MapIndexed(func(_ int, e E) E {
+		return p(e)
+	})
+}
+
+func (l *list[E]) MapIndexed(p func(idx int, e E) E) Collection[E] {
+	var mapped = make([]E, 0)
+	l.ForEachIndexed(func(idx int, e E) {
+		mapped = append(mapped, p(idx, e))
+	})
+	return NewList(mapped...)
+}
+
 func (l *list[E]) Minus(e ...E) Collection[E] {
 	cloned := NewList(slices.Clone(l.elements)...)
 	cloned.Remove(e...)
@@ -345,4 +360,14 @@ func (l *list[E]) ToSlice() []E {
 func (l *list[E]) Union(other Iterable[E]) Set[E] {
 	return l.ToSet().Plus(other.ToSlice()...)
 
+}
+
+func MapList[E1 comparable, E2 comparable](collection Collection[E1], predicate func(E1) E2) List[E2] {
+	result := make([]E2, 0, collection.Size())
+
+	collection.ForEach(func(e1 E1) {
+		result = append(result, predicate(e1))
+	})
+
+	return NewList(result...)
 }

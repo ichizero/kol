@@ -145,6 +145,14 @@ func (s *set[E]) Iterator() Iterator[E] {
 	panic("not implemented")
 }
 
+func (s *set[E]) Map(p func(e E) E) Collection[E] {
+	var mapped = make(map[E]struct{}, 0)
+	s.ForEach(func(e E) {
+		mapped[p(e)] = struct{}{}
+	})
+	return newSet(mapped)
+}
+
 func (s *set[E]) Minus(e ...E) Collection[E] {
 	cloned := s.clone()
 	cloned.Remove(e...)
@@ -206,4 +214,14 @@ func (s *set[E]) ToSlice() []E {
 
 func (s *set[E]) Union(other Iterable[E]) Set[E] {
 	return s.clone().Plus(other.ToSlice()...)
+}
+
+func MapSet[E1 comparable, E2 comparable](collection Collection[E1], predicate func(E1) E2) Set[E2] {
+	result := make([]E2, 0, collection.Size())
+
+	collection.ForEach(func(e1 E1) {
+		result = append(result, predicate(e1))
+	})
+
+	return NewSet(result...)
 }
