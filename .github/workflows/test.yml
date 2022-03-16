@@ -16,9 +16,6 @@ jobs:
       - name: "go vet"
         run: |
           go vet ./...
-      - uses: golangci/golangci-lint-action@v2
-        with:
-          version: v1.44.2
       - name: "go test"
         run: |
           go test -cover -coverprofile coverage.txt -race -v ./...
