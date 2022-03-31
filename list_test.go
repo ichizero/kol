@@ -87,7 +87,7 @@ func TestList_Retain(t *testing.T) {
 	}
 }
 
-func TestList_All(t *testing.T) {
+func TestList_All(t *testing.T) { // nolint: dupl
 	tests := []struct {
 		name      string
 		list      List[int]
@@ -126,7 +126,7 @@ func TestList_All(t *testing.T) {
 	}
 }
 
-func TestList_Any(t *testing.T) {
+func TestList_Any(t *testing.T) { // nolint: dupl
 	tests := []struct {
 		name      string
 		list      List[int]
@@ -834,12 +834,10 @@ func TestMapList(t *testing.T) {
 		want      []string
 	}{
 		{
-			name:  "map",
-			elems: []int{1, 2, 3, 3},
-			transform: func(e int) string {
-				return strconv.Itoa(e)
-			},
-			want: []string{"1", "2", "3", "3"},
+			name:      "map",
+			elems:     []int{1, 2, 3, 3},
+			transform: strconv.Itoa,
+			want:      []string{"1", "2", "3", "3"},
 		},
 	}
 	for _, tt := range tests {

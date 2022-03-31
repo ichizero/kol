@@ -16,7 +16,8 @@ type List[E comparable] interface {
 	// ElementAt returns an element at the given index.
 	// If the given index is out of range of this collection, it returns `false` as a second return value.
 	ElementAt(index int) (E, bool)
-	// ElementAtOrElse returns an element at the given index or the result calling of the defaultValue function if the index is out of range of this collection.
+	// ElementAtOrElse returns an element at the given index or the result calling of the defaultValue function
+	// if the index is out of range of this collection.
 	ElementAtOrElse(index int, defaultValue func() E) E
 	// FilterIndexed returns a list containing only elements matching the given predicate.
 	FilterIndexed(predicate func(idx int, element E) bool) Collection[E]
@@ -31,10 +32,12 @@ type List[E comparable] interface {
 	IndexOfFirst(predicate func(element E) bool) int
 	// IndexOfLast returns an index of the last element matching the given predicate, or -1 if not present.
 	IndexOfLast(predicate func(element E) bool) int
-	// MapIndexed returns a list containing the results of applying the given transform function to each element and its index.
+	// MapIndexed returns a list containing the results of applying the given transform function
+	// to each element and its index.
 	MapIndexed(transform func(idx int, element E) E) Collection[E]
 	// Partition splits the original collection in to two lists.
-	// If any element returns `true` from the given predicate, it is included in the first list, otherwise it is included in the second list.
+	// If any element returns `true` from the given predicate,
+	// it is included in the first list, otherwise it is included in the second list.
 	Partition(predicate func(element E) bool) (List[E], List[E])
 	// Reversed returns a list with elements in reversed order.
 	Reversed() List[E]
@@ -204,21 +207,21 @@ func (l *list[E]) FilterIndexed(p func(idx int, e E) bool) Collection[E] {
 }
 
 func (l *list[E]) Find(p func(e E) bool) (E, bool) {
-	if idx := l.IndexOfFirst(p); idx == -1 {
+	idx := l.IndexOfFirst(p)
+	if idx == -1 {
 		var zero E
 		return zero, false
-	} else {
-		return l.elements[idx], true
 	}
+	return l.elements[idx], true
 }
 
 func (l *list[E]) FindLast(p func(e E) bool) (E, bool) {
-	if idx := l.IndexOfLast(p); idx == -1 {
+	idx := l.IndexOfLast(p)
+	if idx == -1 {
 		var zero E
 		return zero, false
-	} else {
-		return l.elements[idx], true
 	}
+	return l.elements[idx], true
 }
 
 func (l *list[E]) ForEach(a func(e E)) {
@@ -309,7 +312,7 @@ func (l *list[E]) Reversed() List[E] {
 	cloned := slices.Clone(l.elements)
 	size := len(cloned)
 
-	for i := 0; i < size/2; i = i + 1 {
+	for i := 0; i < size/2; i++ {
 		j := size - 1 - i
 		cloned[i], cloned[j] = cloned[j], cloned[i]
 	}
@@ -345,8 +348,7 @@ func (l *list[E]) Subtract(other Iterable[E]) Set[E] {
 }
 
 func (l *list[E]) Take(n uint) Collection[E] {
-	max := uint(l.Size())
-	if max < n {
+	if max := uint(l.Size()); max < n {
 		n = max
 	}
 	return NewList(l.elements[:n]...)

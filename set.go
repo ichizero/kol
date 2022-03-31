@@ -1,7 +1,7 @@
 package kol
 
 import (
-	"golang.org/x/exp/maps" // nolint:typecheck
+	"golang.org/x/exp/maps"
 )
 
 // Set is an un-ordered collection of elements without duplicate elements.

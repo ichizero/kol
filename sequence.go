@@ -233,7 +233,8 @@ func (s *dropSequence[E]) String() string {
 }
 
 func MapSequence[E1 comparable, E2 comparable](seq Sequence[E1], predicate func(E1) E2) Sequence[E2] {
-	return newSequence[E2](newMapSequenceWithTypeConversion[E1, E2](seq.(*sequence[E1]).seq, predicate))
+	return newSequence[E2](
+		newMapSequenceWithTypeConversion[E1, E2](seq.(*sequence[E1]).seq, predicate)) // nolint: forcetypeassert
 }
 
 type mapSequenceWithTypeConversion[E1 comparable, E2 comparable] struct {
