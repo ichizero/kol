@@ -193,12 +193,10 @@ func TestMapSequence(t *testing.T) {
 		want      []string
 	}{
 		{
-			name:  "map",
-			elems: []int{1, 2, 3, 3},
-			transform: func(e int) string {
-				return strconv.Itoa(e)
-			},
-			want: []string{"1", "2", "3", "3"},
+			name:      "map",
+			elems:     []int{1, 2, 3, 3},
+			transform: strconv.Itoa,
+			want:      []string{"1", "2", "3", "3"},
 		},
 	}
 	for _, tt := range tests {

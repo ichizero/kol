@@ -10,7 +10,7 @@ import (
 func TestNewSet(t *testing.T) {
 	assert.Equal(t,
 		map[int]struct{}{1: {}, 2: {}},
-		NewSet(1, 2, 1, 2).(*set[int]).m)
+		NewSet(1, 2, 1, 2).(*set[int]).m) // nolint: forcetypeassert
 }
 
 func TestSet_Add(t *testing.T) {
@@ -109,7 +109,7 @@ func TestSet_Retain(t *testing.T) {
 	}
 }
 
-func TestSet_All(t *testing.T) {
+func TestSet_All(t *testing.T) { // nolint: dupl
 	tests := []struct {
 		name      string
 		set       Set[int]
@@ -148,7 +148,7 @@ func TestSet_All(t *testing.T) {
 	}
 }
 
-func TestSet_Any(t *testing.T) {
+func TestSet_Any(t *testing.T) { // nolint: dupl
 	tests := []struct {
 		name      string
 		set       Set[int]
@@ -474,12 +474,10 @@ func TestMapSet(t *testing.T) {
 		want      []string
 	}{
 		{
-			name:  "map",
-			elems: []int{1, 2, 3},
-			transform: func(e int) string {
-				return strconv.Itoa(e)
-			},
-			want: []string{"1", "2", "3"},
+			name:      "map",
+			elems:     []int{1, 2, 3},
+			transform: strconv.Itoa,
+			want:      []string{"1", "2", "3"},
 		},
 	}
 	for _, tt := range tests {

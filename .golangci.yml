@@ -1,7 +1,17 @@
 linters:
   enable-all: true
   disable:
+    - testpackage
+    - wsl
+    - paralleltest
+    - ireturn
+    - nlreturn
     - golint # deprecated
     - scopelint # deprecated
     - interfacer # deprecated
     - maligned # deprecated
+linters-settings:
+  varnamelen:
+    max-distance: 15
+    ignore-decls:
+      - E comparable

@@ -18,7 +18,8 @@ type Iterable[E comparable] interface {
 	Find(predicate func(element E) bool) (E, bool)
 	// ForEach performs the given action on each element.
 	ForEach(action func(element E))
-	// Intersect returns a set containing all elements that are contained by both this collection and the specified collection.
+	// Intersect returns a set containing all elements that are contained
+	// by both this collection and the specified collection.
 	Intersect(other Iterable[E]) Set[E]
 	// Map returns a collection containing the result of applying the given transform function to each element.
 	Map(transform func(element E) E) Collection[E]
@@ -31,7 +32,8 @@ type Iterable[E comparable] interface {
 	// Single returns the single element matching the given predicate.
 	// If there is no such element, it returns `false` as a second return value.
 	Single(predicate func(element E) bool) (E, bool)
-	// Subtract returns a set containing all elements that are contained by this collection and not contained by the specified collection.
+	// Subtract returns a set containing all elements that are contained by this collection
+	// and not contained by the specified collection.
 	Subtract(other Iterable[E]) Set[E]
 	// ToList converts this collection into List.
 	ToList() List[E]

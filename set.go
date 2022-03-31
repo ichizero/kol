@@ -1,7 +1,7 @@
 package kol
 
 import (
-	"golang.org/x/exp/maps" // nolint:typecheck
+	"golang.org/x/exp/maps"
 )
 
 // Set is an un-ordered collection of elements without duplicate elements.
@@ -93,7 +93,7 @@ func (s *set[E]) Contains(e E) bool {
 }
 
 func (s *set[E]) Count(p func(e E) bool) int {
-	var count = 0
+	count := 0
 	for e := range s.m {
 		if p(e) {
 			count++
@@ -117,7 +117,7 @@ func (s *set[E]) Find(p func(e E) bool) (E, bool) {
 }
 
 func (s *set[E]) Filter(p func(e E) bool) Collection[E] {
-	var filtered = make(map[E]struct{}, 0)
+	filtered := make(map[E]struct{}, 0)
 	s.ForEach(func(e E) {
 		if p(e) {
 			filtered[e] = struct{}{}
@@ -143,7 +143,7 @@ func (s *set[E]) Intersect(other Iterable[E]) Set[E] {
 }
 
 func (s *set[E]) Map(t func(e E) E) Collection[E] {
-	var mapped = make(map[E]struct{}, 0)
+	mapped := make(map[E]struct{}, 0)
 	s.ForEach(func(e E) {
 		mapped[t(e)] = struct{}{}
 	})
@@ -172,7 +172,7 @@ func (s *set[E]) Plus(e ...E) Collection[E] {
 }
 
 func (s *set[E]) Single(p func(e E) bool) (E, bool) {
-	var found = false
+	found := false
 	var res E
 	for e := range s.m {
 		if p(e) {
