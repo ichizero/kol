@@ -88,7 +88,7 @@ func (l *list[E]) Remove(targets ...E) {
 }
 
 func (l *list[E]) Retain(targets ...E) {
-	var retained = make([]E, 0, len(targets))
+	retained := make([]E, 0, len(targets))
 	for _, e := range l.elements {
 		if slices.Contains(targets, e) {
 			retained = append(retained, e)
@@ -129,7 +129,7 @@ func (l *list[E]) Contains(e E) bool {
 }
 
 func (l *list[E]) Count(p func(e E) bool) int {
-	var count = 0
+	count := 0
 	for _, e := range l.elements {
 		if p(e) {
 			count++
@@ -194,7 +194,7 @@ func (l *list[E]) Filter(p func(e E) bool) Collection[E] {
 }
 
 func (l *list[E]) FilterIndexed(p func(idx int, e E) bool) Collection[E] {
-	var filtered = make([]E, 0)
+	filtered := make([]E, 0)
 	l.ForEachIndexed(func(idx int, e E) {
 		if p(idx, e) {
 			filtered = append(filtered, e)
@@ -266,7 +266,7 @@ func (l *list[E]) Map(t func(e E) E) Collection[E] {
 }
 
 func (l *list[E]) MapIndexed(p func(idx int, e E) E) Collection[E] {
-	var mapped = make([]E, 0)
+	mapped := make([]E, 0)
 	l.ForEachIndexed(func(idx int, e E) {
 		mapped = append(mapped, p(idx, e))
 	})
@@ -289,8 +289,8 @@ func (l *list[E]) None(p func(e E) bool) bool {
 }
 
 func (l *list[E]) Partition(p func(e E) bool) (List[E], List[E]) {
-	var first = make([]E, 0)
-	var second = make([]E, 0)
+	first := make([]E, 0)
+	second := make([]E, 0)
 	for _, e := range l.elements {
 		if p(e) {
 			first = append(first, e)
@@ -325,7 +325,7 @@ func (l *list[E]) Shuffled() List[E] {
 }
 
 func (l *list[E]) Single(p func(e E) bool) (E, bool) {
-	var found = false
+	found := false
 	var res E
 	for _, e := range l.elements {
 		if p(e) {
@@ -375,7 +375,6 @@ func (l *list[E]) ToSlice() []E {
 
 func (l *list[E]) Union(other Iterable[E]) Set[E] {
 	return l.ToSet().Plus(other.ToSlice()...)
-
 }
 
 func MapList[E1 comparable, E2 comparable](collection Collection[E1], transform func(E1) E2) List[E2] {

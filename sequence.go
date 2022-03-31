@@ -55,7 +55,7 @@ func (s *sequence[E]) Drop(n int) Sequence[E] {
 }
 
 func (s *sequence[E]) ToSlice() []E {
-	var res = make([]E, 0)
+	res := make([]E, 0)
 	for {
 		e, ok := s.seq.Next()
 		if !ok {
