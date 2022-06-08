@@ -4,7 +4,7 @@ go 1.18
 
 require (
 	github.com/stretchr/testify v1.7.2
-	golang.org/x/exp v0.0.0-20220602145555-4a0574d9293f
+	golang.org/x/exp v0.0.0-20220608143224-64259d1afd70
 )
 
 require (
