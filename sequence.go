@@ -158,7 +158,7 @@ func (s *mapSequence[E]) Next() (E, bool) {
 		if !ok {
 			break
 		}
-		return s.transform(e), true
+		return s.transform(e), true //nolint:staticcheck
 	}
 	var zero E
 	return zero, false
@@ -177,7 +177,7 @@ type takeSequence[E comparable] struct {
 var _ seq[int] = (*takeSequence[int])(nil)
 
 func newTakeSequence[E comparable](parent seq[E], n int) seq[E] {
-	return &takeSequence[E]{parent: parent, limit: n}
+	return &takeSequence[E]{parent: parent, limit: n, taken: 0}
 }
 
 func (s *takeSequence[E]) Next() (E, bool) {
@@ -190,7 +190,7 @@ func (s *takeSequence[E]) Next() (E, bool) {
 			break
 		}
 		s.taken++
-		return e, true
+		return e, true //nolint:staticcheck
 	}
 	var zero E
 	return zero, false
@@ -209,7 +209,7 @@ type dropSequence[E comparable] struct {
 var _ seq[int] = (*dropSequence[int])(nil)
 
 func newDropSequence[E comparable](parent seq[E], n int) seq[E] {
-	return &dropSequence[E]{parent: parent, limit: n}
+	return &dropSequence[E]{parent: parent, limit: n, dropped: 0}
 }
 
 func (s *dropSequence[E]) Next() (E, bool) {
@@ -234,7 +234,7 @@ func (s *dropSequence[E]) String() string {
 
 func MapSequence[E1 comparable, E2 comparable](seq Sequence[E1], predicate func(E1) E2) Sequence[E2] {
 	return newSequence[E2](
-		newMapSequenceWithTypeConversion[E1, E2](seq.(*sequence[E1]).seq, predicate)) // nolint: forcetypeassert
+		newMapSequenceWithTypeConversion[E1, E2](seq.(*sequence[E1]).seq, predicate)) //nolint:forcetypeassert
 }
 
 type mapSequenceWithTypeConversion[E1 comparable, E2 comparable] struct {
@@ -254,7 +254,7 @@ func (s *mapSequenceWithTypeConversion[E1, E2]) Next() (E2, bool) {
 		if !ok {
 			break
 		}
-		return s.transform(e), true
+		return s.transform(e), true //nolint:staticcheck
 	}
 	var zero E2
 	return zero, false

@@ -1,10 +1,12 @@
 module github.com/ichizero/kol
 
-go 1.19
+go 1.22.0
+
+toolchain go1.23.3
 
 require (
 	github.com/stretchr/testify v1.10.0
-	golang.org/x/exp v0.0.0-20240904232852-e7e105dedf7e
+	golang.org/x/exp v0.0.0-20241108190413-2d47ceb2692f
 )
 
 require (

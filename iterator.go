@@ -15,7 +15,7 @@ type iterator[E comparable] struct {
 var _ Iterator[int] = (*iterator[int])(nil)
 
 func newIterator[E comparable](elements []E) *iterator[E] {
-	return &iterator[E]{elements: elements}
+	return &iterator[E]{elements: elements, cursor: 0}
 }
 
 func (i *iterator[E]) HasNext() bool {

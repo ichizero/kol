@@ -312,7 +312,7 @@ func (l *list[E]) Reversed() List[E] {
 	cloned := slices.Clone(l.elements)
 	size := len(cloned)
 
-	for i := 0; i < size/2; i++ {
+	for i := range size / 2 {
 		j := size - 1 - i
 		cloned[i], cloned[j] = cloned[j], cloned[i]
 	}
@@ -348,8 +348,8 @@ func (l *list[E]) Subtract(other Iterable[E]) Set[E] {
 }
 
 func (l *list[E]) Take(n uint) Collection[E] {
-	if max := uint(l.Size()); max < n {
-		n = max
+	if maxVal := uint(l.Size()); maxVal < n {
+		n = maxVal
 	}
 	return NewList(l.elements[:n]...)
 }

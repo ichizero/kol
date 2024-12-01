@@ -10,7 +10,7 @@ import (
 func TestNewSet(t *testing.T) {
 	assert.Equal(t,
 		map[int]struct{}{1: {}, 2: {}},
-		NewSet(1, 2, 1, 2).(*set[int]).m) // nolint: forcetypeassert
+		NewSet(1, 2, 1, 2).(*set[int]).m)
 }
 
 func TestSet_Add(t *testing.T) {
@@ -109,7 +109,7 @@ func TestSet_Retain(t *testing.T) {
 	}
 }
 
-func TestSet_All(t *testing.T) { // nolint: dupl
+func TestSet_All(t *testing.T) {
 	tests := []struct {
 		name      string
 		set       Set[int]
@@ -148,7 +148,7 @@ func TestSet_All(t *testing.T) { // nolint: dupl
 	}
 }
 
-func TestSet_Any(t *testing.T) { // nolint: dupl
+func TestSet_Any(t *testing.T) {
 	tests := []struct {
 		name      string
 		set       Set[int]
