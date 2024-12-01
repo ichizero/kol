@@ -87,7 +87,7 @@ func TestList_Retain(t *testing.T) {
 	}
 }
 
-func TestList_All(t *testing.T) { // nolint: dupl
+func TestList_All(t *testing.T) {
 	tests := []struct {
 		name      string
 		list      List[int]
@@ -126,7 +126,7 @@ func TestList_All(t *testing.T) { // nolint: dupl
 	}
 }
 
-func TestList_Any(t *testing.T) { // nolint: dupl
+func TestList_Any(t *testing.T) {
 	tests := []struct {
 		name      string
 		list      List[int]
@@ -434,7 +434,7 @@ func TestList_FilterIndexed(t *testing.T) {
 		{
 			name: "use index",
 			list: NewList[int](1, 2, 3),
-			predicate: func(idx int, e int) bool {
+			predicate: func(idx int, _ int) bool {
 				return idx > 1
 			},
 			want: NewList[int](3),
@@ -442,7 +442,7 @@ func TestList_FilterIndexed(t *testing.T) {
 		{
 			name: "use element",
 			list: NewList[int](1, 2, 3, 2, 3),
-			predicate: func(idx int, e int) bool {
+			predicate: func(_ int, e int) bool {
 				return e == 2
 			},
 			want: NewList[int](2, 2),

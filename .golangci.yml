@@ -1,17 +1,52 @@
-linters:
+run:
+  timeout: 5m
+  tests: true
+output:
+  sort-results: true
+linters: # https://golangci-lint.run/usage/linters/
   enable-all: true
   disable:
-    - testpackage
-    - wsl
-    - paralleltest
+    - depguard
+    - testableexamples # TODO
+    - interfacebloat
     - ireturn
     - nlreturn
-    - golint # deprecated
-    - scopelint # deprecated
-    - interfacer # deprecated
-    - maligned # deprecated
+    - paralleltest # TODO
+    - err113 # Use errorlint instead.
+    - forbidigo
+    - gofmt # Use gofumpt instead.
+    - testpackage
+    - tparallel # Use paralleltest instead.
+    - wsl
+    - exportloopref # deprecated
+    - gomnd # deprecated
+    - execinquery # deprecated
 linters-settings:
   varnamelen:
     max-distance: 15
     ignore-decls:
       - E comparable
+  gosec:
+    excludes:
+      - G115
+issues:
+  exclude-dirs:
+    - .github
+  exclude-files:
+    - ".*_gen.go$"
+  exclude-rules:
+    - path: _test\.go
+      linters:
+        - containedctx
+        - funlen
+        - varnamelen
+        - dupl
+        - gocognit
+        - cyclop
+        - maintidx
+        - lll
+        - goconst
+        - contextcheck
+        - forcetypeassert
+    - text: 'shadow: declaration of "(err|ctx)" shadows declaration at'
+      linters: [ govet ]
