@@ -6,7 +6,7 @@ toolchain go1.23.6
 
 require (
 	github.com/stretchr/testify v1.11.1
-	golang.org/x/exp v0.0.0-20250128182459-e0ece0dbea4c
+	golang.org/x/exp 8b4c13bb791b
 )
 
 require (
