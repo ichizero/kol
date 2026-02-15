@@ -1,8 +1,8 @@
 module github.com/ichizero/kol
 
-go 1.22.0
+go 1.24.0
 
-toolchain go1.23.6
+toolchain go1.26.0
 
 require (
 	github.com/stretchr/testify v1.11.1
