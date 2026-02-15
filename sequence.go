@@ -181,19 +181,18 @@ func newTakeSequence[E comparable](parent seq[E], n int) seq[E] {
 }
 
 func (s *takeSequence[E]) Next() (E, bool) {
-	for {
-		if s.taken >= s.limit {
-			break
-		}
-		e, ok := s.parent.Next()
-		if !ok {
-			break
-		}
-		s.taken++
-		return e, true //nolint:staticcheck
+	if s.taken >= s.limit {
+		var zero E
+		return zero, false
 	}
-	var zero E
-	return zero, false
+
+	e, ok := s.parent.Next()
+	if !ok {
+		var zero E
+		return zero, false
+	}
+	s.taken++
+	return e, true
 }
 
 func (s *takeSequence[E]) String() string {
