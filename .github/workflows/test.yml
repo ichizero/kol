@@ -20,4 +20,4 @@ jobs:
       - name: "go test"
         run: |
           go test -cover -coverprofile coverage.txt -race -v ./...
-      - uses: codecov/codecov-action@v5
+      - uses: codecov/codecov-action@v6
