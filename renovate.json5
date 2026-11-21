@@ -1,7 +1,10 @@
 {
-  extends: ["config:base"],
+  extends: ["config:recommended"],
   automerge: true,
-  major: {
-    automerge: false,
-  },
+  packageRules: [
+    {
+      matchUpdateTypes: ["major"],
+      automerge: false,
+    },
+  ],
 }
