@@ -1,7 +1,8 @@
 package kol
 
 import (
-	"golang.org/x/exp/maps"
+	"iter"
+	"maps"
 )
 
 // Set is an un-ordered collection of elements without duplicate elements.
@@ -14,19 +15,72 @@ type set[E comparable] struct {
 }
 
 func NewSet[E comparable](elements ...E) Set[E] {
-	m := make(map[E]struct{}, 0)
+	return &set[E]{m: toMap(elements)}
+}
+
+// toMap returns a new map whose keys are the given elements.
+func toMap[E comparable](elements []E) map[E]struct{} {
+	m := make(map[E]struct{}, len(elements))
 	for _, e := range elements {
 		m[e] = struct{}{}
 	}
+	return m
+}
+
+// intersect returns a set containing keys of m that are contained by other.
+func intersect[E comparable](m map[E]struct{}, other Iterable[E]) Set[E] {
+	if o, ok := other.(*set[E]); ok {
+		// Cloning a map is cheaper than building one element by element.
+		res := maps.Clone(o.m)
+		maps.DeleteFunc(res, func(e E, _ struct{}) bool {
+			_, ok := m[e]
+			return !ok
+		})
+		return &set[E]{m: res}
+	}
+
+	res := make(map[E]struct{})
+	other.ForEach(func(e E) {
+		if _, ok := m[e]; ok {
+			res[e] = struct{}{}
+		}
+	})
+	return &set[E]{m: res}
+}
+
+// subtract removes all elements of other from m and returns m as a set.
+func subtract[E comparable](m map[E]struct{}, other Iterable[E]) Set[E] {
+	other.ForEach(func(e E) {
+		delete(m, e)
+	})
 	return &set[E]{m: m}
 }
 
-func newSet[E comparable](m map[E]struct{}) Set[E] {
+// union adds all elements of other to m and returns m as a set.
+func union[E comparable](m map[E]struct{}, other Iterable[E]) Set[E] {
+	other.ForEach(func(e E) {
+		m[e] = struct{}{}
+	})
 	return &set[E]{m: m}
 }
 
-func (s *set[E]) clone() Set[E] {
-	return newSet(maps.Clone(s.m))
+// single returns the single element of seq matching the given predicate.
+func single[E comparable](seq iter.Seq[E], p func(e E) bool) (E, bool) {
+	var (
+		res   E
+		found bool
+	)
+	for e := range seq {
+		if !p(e) {
+			continue
+		}
+		if found {
+			var zero E
+			return zero, false
+		}
+		res, found = e, true
+	}
+	return res, found
 }
 
 var _ Collection[int] = (*set[int])(nil)
@@ -38,11 +92,11 @@ func (s *set[E]) Add(elements ...E) {
 }
 
 func (s *set[E]) Clear() {
-	maps.Clear(s.m)
+	clear(s.m)
 }
 
 func (s *set[E]) IsEmpty() bool {
-	return s.Size() == 0
+	return len(s.m) == 0
 }
 
 func (s *set[E]) Remove(targets ...E) {
@@ -52,12 +106,11 @@ func (s *set[E]) Remove(targets ...E) {
 }
 
 func (s *set[E]) Retain(targets ...E) {
-	tl := NewList(targets...)
-	for e := range s.m {
-		if !tl.Contains(e) {
-			delete(s.m, e)
-		}
-	}
+	keep := toMap(targets)
+	maps.DeleteFunc(s.m, func(e E, _ struct{}) bool {
+		_, ok := keep[e]
+		return !ok
+	})
 }
 
 func (s *set[E]) Size() int {
@@ -67,7 +120,7 @@ func (s *set[E]) Size() int {
 var _ Iterable[int] = (*set[int])(nil)
 
 func (s *set[E]) All(p func(e E) bool) bool {
-	if s.Size() == 0 {
+	if len(s.m) == 0 {
 		return false
 	}
 	for e := range s.m {
@@ -117,13 +170,13 @@ func (s *set[E]) Find(p func(e E) bool) (E, bool) {
 }
 
 func (s *set[E]) Filter(p func(e E) bool) Collection[E] {
-	filtered := make(map[E]struct{}, 0)
-	s.ForEach(func(e E) {
+	filtered := make(map[E]struct{})
+	for e := range s.m {
 		if p(e) {
 			filtered[e] = struct{}{}
 		}
-	})
-	return newSet(filtered)
+	}
+	return &set[E]{m: filtered}
 }
 
 func (s *set[E]) ForEach(a func(e E)) {
@@ -133,92 +186,67 @@ func (s *set[E]) ForEach(a func(e E)) {
 }
 
 func (s *set[E]) Intersect(other Iterable[E]) Set[E] {
-	res := other.ToSet()
-	for e := range s.m {
-		if _, ok := res.(*set[E]).m[e]; !ok {
-			res.Remove(e)
-		}
-	}
-	return res
+	return intersect(s.m, other)
 }
 
 func (s *set[E]) Map(t func(e E) E) Collection[E] {
-	mapped := make(map[E]struct{}, 0)
-	s.ForEach(func(e E) {
+	mapped := make(map[E]struct{}, len(s.m))
+	for e := range s.m {
 		mapped[t(e)] = struct{}{}
-	})
-	return newSet(mapped)
+	}
+	return &set[E]{m: mapped}
 }
 
 func (s *set[E]) Minus(e ...E) Collection[E] {
-	cloned := s.clone()
+	cloned := s.ToSet()
 	cloned.Remove(e...)
 	return cloned
 }
 
 func (s *set[E]) None(p func(e E) bool) bool {
-	for e := range s.m {
-		if p(e) {
-			return false
-		}
-	}
-	return true
+	return !s.Any(p)
 }
 
 func (s *set[E]) Plus(e ...E) Collection[E] {
-	cloned := s.clone()
+	cloned := s.ToSet()
 	cloned.Add(e...)
 	return cloned
 }
 
 func (s *set[E]) Single(p func(e E) bool) (E, bool) {
-	found := false
-	var res E
-	for e := range s.m {
-		if p(e) {
-			if found {
-				var zero E
-				return zero, false
-			}
-			res = e
-			found = true
-		}
-	}
-	return res, true
+	return single(maps.Keys(s.m), p)
 }
 
 func (s *set[E]) Subtract(other Iterable[E]) Set[E] {
-	res := s.clone()
-	for _, e := range other.ToSlice() {
-		if _, ok := res.(*set[E]).m[e]; ok {
-			res.Remove(e)
-		}
-	}
-	return res
+	return subtract(maps.Clone(s.m), other)
 }
 
 func (s *set[E]) ToList() List[E] {
-	return NewList(maps.Keys(s.m)...)
+	return NewList(s.ToSlice()...)
 }
 
 func (s *set[E]) ToSet() Set[E] {
-	return s.clone()
+	return &set[E]{m: maps.Clone(s.m)}
 }
 
 func (s *set[E]) ToSlice() []E {
-	return maps.Keys(s.m)
+	elements := make([]E, 0, len(s.m))
+	for e := range s.m {
+		elements = append(elements, e)
+	}
+	return elements
 }
 
 func (s *set[E]) Union(other Iterable[E]) Set[E] {
-	return s.clone().Plus(other.ToSlice()...)
+	return union(maps.Clone(s.m), other)
 }
 
 func MapSet[E1 comparable, E2 comparable](collection Collection[E1], transform func(E1) E2) Set[E2] {
-	result := make([]E2, 0, collection.Size())
+	result := make(map[E2]struct{}, collection.Size())
 
 	collection.ForEach(func(e1 E1) {
-		result = append(result, transform(e1))
+		result[transform(e1)] = struct{}{}
 	})
 
-	return NewSet(result...)
+	return &set[E2]{m: result}
 }

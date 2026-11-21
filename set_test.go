@@ -456,6 +456,14 @@ func TestSet_Single(t *testing.T) {
 			},
 			want: result{e: 0, ok: false},
 		},
+		{
+			name: "not matched",
+			set:  NewSet[int](1, 2, 3),
+			predicate: func(e int) bool {
+				return e > 3
+			},
+			want: result{e: 0, ok: false},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

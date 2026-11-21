@@ -15,6 +15,15 @@ func benchInts(n, offset int) []int {
 	return elems
 }
 
+// benchUniqueInts returns n distinct ints starting at offset.
+func benchUniqueInts(n, offset int) []int {
+	elems := make([]int, n)
+	for i := range elems {
+		elems[i] = offset + i
+	}
+	return elems
+}
+
 func isEven(e int) bool { return e%2 == 0 }
 
 func double(e int) int { return e * 2 }
@@ -73,10 +82,10 @@ func BenchmarkList(b *testing.B) {
 }
 
 func BenchmarkSet(b *testing.B) {
-	elems := benchInts(benchSize, 0)
+	elems := benchUniqueInts(benchSize, 0)
 	set := NewSet(elems...)
-	other := NewSet(benchInts(benchSize, benchSize/4)...)
-	targets := benchInts(benchSize/10, 0)
+	other := NewSet(benchUniqueInts(benchSize, benchSize/2)...)
+	targets := benchUniqueInts(benchSize/10, 0)
 
 	b.Run("NewSet", func(b *testing.B) {
 		for b.Loop() {

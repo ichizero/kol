@@ -6,12 +6,12 @@ linters:
   disable:
     - depguard
     - err113 # Use errorlint instead.
-    - exptostd
+    - exhaustruct # deprecated: replaced by exhaustruct_v5.
     - forbidigo
+    - gomodguard # deprecated: replaced by gomodguard_v2.
     - interfacebloat
     - ireturn
     - mnd # deprecated: gomnd was renamed to mnd.
-    - modernize
     - nlreturn
     - paralleltest # TODO
     - testableexamples # TODO

@@ -55,15 +55,14 @@ func (s *sequence[E]) Drop(n int) Sequence[E] {
 }
 
 func (s *sequence[E]) ToSlice() []E {
-	res := make([]E, 0)
+	res := []E{}
 	for {
 		e, ok := s.seq.Next()
 		if !ok {
-			break
+			return res
 		}
 		res = append(res, e)
 	}
-	return res
 }
 
 func (s *sequence[E]) ToList() List[E] {
@@ -153,15 +152,12 @@ func newMapSequence[E comparable](parent seq[E], transform func(e E) E) seq[E] {
 }
 
 func (s *mapSequence[E]) Next() (E, bool) {
-	for {
-		e, ok := s.parent.Next()
-		if !ok {
-			break
-		}
-		return s.transform(e), true //nolint:staticcheck
+	e, ok := s.parent.Next()
+	if !ok {
+		var zero E
+		return zero, false
 	}
-	var zero E
-	return zero, false
+	return s.transform(e), true
 }
 
 func (s *mapSequence[E]) String() string {
@@ -248,15 +244,12 @@ func newMapSequenceWithTypeConversion[E1 comparable, E2 comparable](parent seq[E
 }
 
 func (s *mapSequenceWithTypeConversion[E1, E2]) Next() (E2, bool) {
-	for {
-		e, ok := s.parent.Next()
-		if !ok {
-			break
-		}
-		return s.transform(e), true //nolint:staticcheck
+	e, ok := s.parent.Next()
+	if !ok {
+		var zero E2
+		return zero, false
 	}
-	var zero E2
-	return zero, false
+	return s.transform(e), true
 }
 
 func (s *mapSequenceWithTypeConversion[E1, E2]) String() string {
