@@ -1,6 +1,8 @@
 package kol
 
 import (
+	slices0 "slices"
+
 	"golang.org/x/exp/rand"
 	"golang.org/x/exp/slices"
 )
@@ -119,12 +121,7 @@ func (l *list[E]) All(p func(e E) bool) bool {
 }
 
 func (l *list[E]) Any(p func(e E) bool) bool {
-	for _, e := range l.elements {
-		if p(e) {
-			return true
-		}
-	}
-	return false
+	return slices0.ContainsFunc(l.elements, p)
 }
 
 func (l *list[E]) Contains(e E) bool {
@@ -146,7 +143,7 @@ func (l *list[E]) Distinct() Collection[E] {
 	if size == 0 {
 		return NewList[E]()
 	}
-	existence := make(map[E]interface{}, size)
+	existence := make(map[E]any, size)
 	filtered := make([]E, 0, size)
 	for _, e := range l.elements {
 		if _, ok := existence[e]; ok {
@@ -283,12 +280,7 @@ func (l *list[E]) Minus(e ...E) Collection[E] {
 }
 
 func (l *list[E]) None(p func(e E) bool) bool {
-	for _, e := range l.elements {
-		if p(e) {
-			return false
-		}
-	}
-	return true
+	return !slices0.ContainsFunc(l.elements, p)
 }
 
 func (l *list[E]) Partition(p func(e E) bool) (List[E], List[E]) {
