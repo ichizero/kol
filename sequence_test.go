@@ -42,11 +42,11 @@ func TestSequence_MethodChain(t *testing.T) {
 
 	assert.Equal(t, []*user{
 		{ID: 1, Name: "Alice", Admin: true},
-		{ID: 2, Name: "Bob"},
+		{ID: 2, Name: "Bob", Admin: false},
 		{ID: 3, Name: "Carol", Admin: true},
-		{ID: 4, Name: "Dave"},
-		{ID: 5, Name: "Ellen"}, // should not make an admin
-		{ID: 6, Name: "Frank"}, // should not make an admin
+		{ID: 4, Name: "Dave", Admin: false},
+		{ID: 5, Name: "Ellen", Admin: false}, // should not make an admin
+		{ID: 6, Name: "Frank", Admin: false}, // should not make an admin
 	}, users)
 }
 
