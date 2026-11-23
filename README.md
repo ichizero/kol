@@ -5,7 +5,7 @@
 [![Codecov](https://codecov.io/gh/ichizero/kol/branch/main/graph/badge.svg)](https://codecov.io/gh/ichizero/kol)
 [![Go Report Card](https://goreportcard.com/badge/github.com/ichizero/kol)](https://goreportcard.com/report/github.com/ichizero/kol)
 
-`kol` is a collection package based on Go 1.18+ Generics.
+`kol` is a collection package based on Go Generics.
 It provides List, Set and Sequence like Kotlin collections package.
 You can operate collections with method-chaining 🔗.
 

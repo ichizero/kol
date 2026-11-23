@@ -738,12 +738,47 @@ func TestList_Single(t *testing.T) {
 			},
 			want: result{e: 0, ok: false},
 		},
+		{
+			name: "not matched",
+			list: NewList[int](1, 2, 3),
+			predicate: func(e int) bool {
+				return e > 3
+			},
+			want: result{e: 0, ok: false},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got, ok := tt.list.Single(tt.predicate)
 			assert.Equal(t, tt.want.e, got)
 			assert.Equal(t, tt.want.ok, ok)
+		})
+	}
+}
+
+func TestList_Subtract(t *testing.T) {
+	tests := []struct {
+		name  string
+		list  List[int]
+		other Iterable[int]
+		want  Set[int]
+	}{
+		{
+			name:  "removes elements contained by other",
+			list:  NewList[int](1, 2, 2, 3),
+			other: NewList[int](2, 4),
+			want:  NewSet[int](1, 3),
+		},
+		{
+			name:  "no common elements",
+			list:  NewList[int](1, 2),
+			other: NewSet[int](3),
+			want:  NewSet[int](1, 2),
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			assert.Equal(t, tt.want, tt.list.Subtract(tt.other))
 		})
 	}
 }

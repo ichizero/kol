@@ -1,8 +1,8 @@
 package kol
 
 import (
-	"golang.org/x/exp/rand"
-	"golang.org/x/exp/slices"
+	"math/rand/v2"
+	"slices"
 )
 
 // List is an ordered collection of elements.
@@ -55,17 +55,9 @@ type list[E comparable] struct {
 
 func NewList[E comparable](elements ...E) List[E] {
 	if len(elements) == 0 {
-		elements = make([]E, 0)
+		elements = []E{}
 	}
-	return &list[E]{
-		elements: elements,
-	}
-}
-
-func (l *list[E]) clone() List[E] {
-	return &list[E]{
-		elements: slices.Clone(l.elements),
-	}
+	return &list[E]{elements: elements}
 }
 
 var _ List[int] = (*list[int])(nil)
@@ -79,7 +71,7 @@ func (l *list[E]) Clear() {
 }
 
 func (l *list[E]) IsEmpty() bool {
-	return l.Size() == 0
+	return len(l.elements) == 0
 }
 
 func (l *list[E]) Remove(targets ...E) {
@@ -91,10 +83,13 @@ func (l *list[E]) Remove(targets ...E) {
 }
 
 func (l *list[E]) Retain(targets ...E) {
-	retained := make([]E, 0, len(targets))
-	for _, e := range l.elements {
-		if slices.Contains(targets, e) {
-			retained = append(retained, e)
+	retained := make([]E, 0, min(len(l.elements), len(targets)))
+	if len(targets) > 0 {
+		keep := toMap(targets)
+		for _, e := range l.elements {
+			if _, ok := keep[e]; ok {
+				retained = append(retained, e)
+			}
 		}
 	}
 	l.elements = retained
@@ -107,7 +102,7 @@ func (l *list[E]) Size() int {
 var _ Iterable[int] = (*list[int])(nil)
 
 func (l *list[E]) All(p func(e E) bool) bool {
-	if l.Size() == 0 {
+	if len(l.elements) == 0 {
 		return false
 	}
 	for _, e := range l.elements {
@@ -119,12 +114,7 @@ func (l *list[E]) All(p func(e E) bool) bool {
 }
 
 func (l *list[E]) Any(p func(e E) bool) bool {
-	for _, e := range l.elements {
-		if p(e) {
-			return true
-		}
-	}
-	return false
+	return slices.ContainsFunc(l.elements, p)
 }
 
 func (l *list[E]) Contains(e E) bool {
@@ -142,27 +132,22 @@ func (l *list[E]) Count(p func(e E) bool) int {
 }
 
 func (l *list[E]) Distinct() Collection[E] {
-	size := l.Size()
-	if size == 0 {
-		return NewList[E]()
-	}
-	existence := make(map[E]interface{}, size)
-	filtered := make([]E, 0, size)
+	seen := make(map[E]struct{}, len(l.elements))
+	distinct := make([]E, 0, len(l.elements))
 	for _, e := range l.elements {
-		if _, ok := existence[e]; ok {
-			continue // duplicated
+		if _, ok := seen[e]; !ok {
+			seen[e] = struct{}{}
+			distinct = append(distinct, e)
 		}
-		existence[e] = struct{}{}
-		filtered = append(filtered, e)
 	}
-	return NewList(filtered...)
+	return NewList(distinct...)
 }
 
 func (l *list[E]) Drop(n uint) Collection[E] {
-	if int(n) >= l.Size() {
+	if n >= uint(len(l.elements)) {
 		return NewList[E]()
 	}
-	return NewList[E](l.elements[n:]...)
+	return NewList(l.elements[n:]...)
 }
 
 func (l *list[E]) DropWhile(p func(e E) bool) Collection[E] {
@@ -175,7 +160,7 @@ func (l *list[E]) DropWhile(p func(e E) bool) Collection[E] {
 }
 
 func (l *list[E]) ElementAt(idx int) (E, bool) {
-	if idx < 0 || idx >= l.Size() {
+	if idx < 0 || idx >= len(l.elements) {
 		var zero E
 		return zero, false
 	}
@@ -191,43 +176,37 @@ func (l *list[E]) ElementAtOrElse(idx int, f func() E) E {
 }
 
 func (l *list[E]) Filter(p func(e E) bool) Collection[E] {
-	return l.FilterIndexed(func(_ int, e E) bool {
-		return p(e)
-	})
+	filtered := []E{}
+	for _, e := range l.elements {
+		if p(e) {
+			filtered = append(filtered, e)
+		}
+	}
+	return NewList(filtered...)
 }
 
 func (l *list[E]) FilterIndexed(p func(idx int, e E) bool) Collection[E] {
-	filtered := make([]E, 0)
-	l.ForEachIndexed(func(idx int, e E) {
-		if p(idx, e) {
+	filtered := []E{}
+	for i, e := range l.elements {
+		if p(i, e) {
 			filtered = append(filtered, e)
 		}
-	})
+	}
 	return NewList(filtered...)
 }
 
 func (l *list[E]) Find(p func(e E) bool) (E, bool) {
-	idx := l.IndexOfFirst(p)
-	if idx == -1 {
-		var zero E
-		return zero, false
-	}
-	return l.elements[idx], true
+	return l.ElementAt(slices.IndexFunc(l.elements, p))
 }
 
 func (l *list[E]) FindLast(p func(e E) bool) (E, bool) {
-	idx := l.IndexOfLast(p)
-	if idx == -1 {
-		var zero E
-		return zero, false
-	}
-	return l.elements[idx], true
+	return l.ElementAt(l.IndexOfLast(p))
 }
 
 func (l *list[E]) ForEach(a func(e E)) {
-	l.ForEachIndexed(func(_ int, e E) {
+	for _, e := range l.elements {
 		a(e)
-	})
+	}
 }
 
 func (l *list[E]) ForEachIndexed(a func(idx int, e E)) {
@@ -241,17 +220,12 @@ func (l *list[E]) IndexOf(e E) int {
 }
 
 func (l *list[E]) IndexOfFirst(p func(e E) bool) int {
-	for i, e := range l.elements {
-		if p(e) {
-			return i
-		}
-	}
-	return -1
+	return slices.IndexFunc(l.elements, p)
 }
 
 func (l *list[E]) IndexOfLast(p func(e E) bool) int {
-	for i := l.Size() - 1; i >= 0; i-- {
-		if p(l.elements[i]) {
+	for i, e := range slices.Backward(l.elements) {
+		if p(e) {
 			return i
 		}
 	}
@@ -259,41 +233,38 @@ func (l *list[E]) IndexOfLast(p func(e E) bool) int {
 }
 
 func (l *list[E]) Intersect(other Iterable[E]) Set[E] {
-	return l.ToSet().Intersect(other)
+	return intersect(toMap(l.elements), other)
 }
 
 func (l *list[E]) Map(t func(e E) E) Collection[E] {
-	return l.MapIndexed(func(_ int, e E) E {
-		return t(e)
-	})
+	mapped := make([]E, len(l.elements))
+	for i, e := range l.elements {
+		mapped[i] = t(e)
+	}
+	return NewList(mapped...)
 }
 
-func (l *list[E]) MapIndexed(p func(idx int, e E) E) Collection[E] {
-	mapped := make([]E, 0)
-	l.ForEachIndexed(func(idx int, e E) {
-		mapped = append(mapped, p(idx, e))
-	})
+func (l *list[E]) MapIndexed(t func(idx int, e E) E) Collection[E] {
+	mapped := make([]E, len(l.elements))
+	for i, e := range l.elements {
+		mapped[i] = t(i, e)
+	}
 	return NewList(mapped...)
 }
 
 func (l *list[E]) Minus(e ...E) Collection[E] {
-	cloned := NewList(slices.Clone(l.elements)...)
+	cloned := l.ToList()
 	cloned.Remove(e...)
 	return cloned
 }
 
 func (l *list[E]) None(p func(e E) bool) bool {
-	for _, e := range l.elements {
-		if p(e) {
-			return false
-		}
-	}
-	return true
+	return !slices.ContainsFunc(l.elements, p)
 }
 
 func (l *list[E]) Partition(p func(e E) bool) (List[E], List[E]) {
-	first := make([]E, 0)
-	second := make([]E, 0)
+	first := []E{}
+	second := []E{}
 	for _, e := range l.elements {
 		if p(e) {
 			first = append(first, e)
@@ -305,53 +276,33 @@ func (l *list[E]) Partition(p func(e E) bool) (List[E], List[E]) {
 }
 
 func (l *list[E]) Plus(e ...E) Collection[E] {
-	return NewList(append(slices.Clone(l.elements), e...)...)
+	return NewList(slices.Concat(l.elements, e)...)
 }
 
 func (l *list[E]) Reversed() List[E] {
 	cloned := slices.Clone(l.elements)
-	size := len(cloned)
-
-	for i := range size / 2 {
-		j := size - 1 - i
-		cloned[i], cloned[j] = cloned[j], cloned[i]
-	}
+	slices.Reverse(cloned)
 	return NewList(cloned...)
 }
 
 func (l *list[E]) Shuffled() List[E] {
 	cloned := slices.Clone(l.elements)
-	rand.Shuffle(len(cloned), func(i, j int) {
+	rand.Shuffle(len(cloned), func(i, j int) { //nolint:gosec // Shuffling needs no cryptographic randomness.
 		cloned[i], cloned[j] = cloned[j], cloned[i]
 	})
 	return NewList(cloned...)
 }
 
 func (l *list[E]) Single(p func(e E) bool) (E, bool) {
-	found := false
-	var res E
-	for _, e := range l.elements {
-		if p(e) {
-			if found {
-				var zero E
-				return zero, false
-			}
-			res = e
-			found = true
-		}
-	}
-	return res, true
+	return single(slices.Values(l.elements), p)
 }
 
 func (l *list[E]) Subtract(other Iterable[E]) Set[E] {
-	return l.ToSet().Intersect(other)
+	return subtract(toMap(l.elements), other)
 }
 
 func (l *list[E]) Take(n uint) Collection[E] {
-	if maxVal := uint(l.Size()); maxVal < n {
-		n = maxVal
-	}
-	return NewList(l.elements[:n]...)
+	return NewList(l.elements[:min(n, uint(len(l.elements)))]...)
 }
 
 func (l *list[E]) TakeWhile(p func(e E) bool) Collection[E] {
@@ -364,7 +315,7 @@ func (l *list[E]) TakeWhile(p func(e E) bool) Collection[E] {
 }
 
 func (l *list[E]) ToList() List[E] {
-	return l.clone()
+	return NewList(slices.Clone(l.elements)...)
 }
 
 func (l *list[E]) ToSet() Set[E] {
@@ -376,7 +327,7 @@ func (l *list[E]) ToSlice() []E {
 }
 
 func (l *list[E]) Union(other Iterable[E]) Set[E] {
-	return l.ToSet().Plus(other.ToSlice()...)
+	return union(toMap(l.elements), other)
 }
 
 func MapList[E1 comparable, E2 comparable](collection Collection[E1], transform func(E1) E2) List[E2] {
